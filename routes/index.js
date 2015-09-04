@@ -15,7 +15,7 @@ router.get('/json', function (req, res) {
 		//.select('id', 'name')
 		.then(function (rows) {
 			//console.log(rows);
-			res.send({success: true, rows: rows[0]});
+			res.send({ok: true, rows: rows[0]});
 		})
 		.catch(function (err) {
 			console.log(err);
@@ -31,6 +31,27 @@ router.get('/sql', function (req, res) {
 	 .limit(10)
 	 .orderBy('name', 'desc')
 	 .toSQL();
+});
+
+router.post('/kpi', function (req, res) {
+	var db = req.db;
+	var year = req.body.year;
+
+	var sql = 'SELECT b.ampurname, SUBSTR(a.areacode ,1 , 4) as ampcode
+				, SUM(target) as target
+				, SUM(result) as result
+				from s_kpi_anc12 a
+				left join campur b ON SUBSTR(a.areacode , 1 , 4) = b.ampurcodefull
+				where a.b_year=?
+				group by SUBSTR(a.areacode, 1 , 4)';
+
+	db.rew(sql, [year])
+	 	.then(function (rows) {
+	 		res.send({ok: true, rows: rows[0]});
+	 	})
+	 	.catch(function (err) {
+			console.log(err);
+		});
 });
 
 router.post('/fruits', function (req, res) {
